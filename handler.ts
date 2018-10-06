@@ -155,13 +155,13 @@ export async function getTweetFeed(event, context, callback) {
 
   try {
     const titleRes = await Axios.get(
-      "https://api.twitter.com/1.1/tweets/search/30day/prod.json",
+      "https://api.twitter.com/1.1/search/tweets.json",
       {
         headers: {
           Authorization: `Bearer ${token}`
         },
         params: {
-          query: queryParams.q
+          q: queryParams.q
         }
       }
     );
