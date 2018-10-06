@@ -10,7 +10,9 @@
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^10.11.4",
-    "serverless-plugin-typescript": "^1.1.5"
+    "serverless": "^1.32.0",
+    "serverless-plugin-typescript": "^1.1.5",
+    "typescript": "^3.1.1"
   },
   "dependencies": {
     "axios": "^0.18.0"
