@@ -135,8 +135,22 @@ async function getTwitterToken() {
 }
 
 export async function getTweetFeed(event, context, callback) {
-  const token = await getTwitterToken();
+  const queryParams = event.queryStringParameters;
+  if (!queryParams || !queryParams.q) {
+    const response = {
+      statusCode: 400,
+      headers: {
+        "Access-Control-Allow-Origin": "*"
+      },
+      body: JSON.stringify({
+        error: "Invalid Parameters."
+      })
+    };
 
+    return callback(null, response);
+  }
+
+  const token = await getTwitterToken();
   let tweets: TweetResult[] = [];
 
   try {
@@ -147,7 +161,7 @@ export async function getTweetFeed(event, context, callback) {
           Authorization: `Bearer ${token}`
         },
         params: {
-          query: "pluto network"
+          query: queryParams.q
         }
       }
     );
