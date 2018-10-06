@@ -1,0 +1,28 @@
+service: scinapse-twitter-feed
+
+plugins:
+  - serverless-plugin-typescript
+
+  provider:
+  name: aws
+  runtime: nodejs8.10
+  memorySize: 128
+  region: us-east-1
+  environment:
+    TWITTER_SERVICE_KEY: ${env:TWITTER_SERVICE_KEY}
+    TWITTER_SECRET_KEY: ${env:TWITTER_SECRET_KEY}
+
+functions:
+  getTweetFeed:
+    handler: handler.getTweetFeed
+    events:
+      - http:
+          path: getFeed
+          method: get
+          cors: true
+
+resources:
+  Resources:
+    GetTweetFeedLogGroup:
+      Properties:
+        RetentionInDays: "30"
