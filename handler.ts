@@ -86,15 +86,21 @@ interface TweetResult {
   extended_entities: any;
 }
 
-interface RequestParameters {
-  maxResults: number;
-  fromDate: string;
-  toDate: string;
+interface SearchMetadata {
+  completed_in: number;
+  max_id: number;
+  max_id_str: string;
+  next_results: string;
+  query: string;
+  refresh_url: string;
+  count: number;
+  since_id: number;
+  since_id_str: string;
 }
 
 interface TweetSearchResult {
-  results: TweetResult[];
-  requestParameters: RequestParameters;
+  statuses: TweetResult[];
+  search_metadata: SearchMetadata;
 }
 
 function logError(err, errorName: string) {
@@ -170,7 +176,7 @@ export async function getTweetFeed(event, context, callback) {
 
     const titleTweetResponse = result.data as TweetSearchResult;
 
-    tweets = titleTweetResponse.results;
+    tweets = titleTweetResponse.statuses;
   } catch (err) {
     logError(err, "GET_TWEETS_FROM_TITLE_SEARCH");
   }
