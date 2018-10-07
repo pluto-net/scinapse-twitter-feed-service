@@ -189,6 +189,7 @@ async function searchTweets(
   searchQuery: string,
   callback: Function
 ) {
+  console.log(searchQuery);
   try {
     const result = await Axios.get(
       "https://api.twitter.com/1.1/search/tweets.json",
@@ -197,7 +198,7 @@ async function searchTweets(
           Authorization: `Bearer ${token}`
         },
         params: {
-          q: searchQuery
+          q: encodeURIComponent(searchQuery)
         }
       }
     );
@@ -251,26 +252,6 @@ export async function getTweetFeed(event, context, callback) {
       callback
     );
     tweets = [...tweets, ...journalNameResult];
-  }
-
-  try {
-    const result = await Axios.get(
-      "https://api.twitter.com/1.1/search/tweets.json",
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
-        },
-        params: {
-          q: queryParams.q
-        }
-      }
-    );
-
-    const titleTweetResponse = result.data as TweetSearchResult;
-
-    tweets = titleTweetResponse.statuses;
-  } catch (err) {
-    return logError(err, "GET_TWEETS_FROM_TITLE_SEARCH", callback);
   }
 
   const response = {
