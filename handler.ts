@@ -154,7 +154,7 @@ export async function getTweetFeed(event, context, callback) {
   let tweets: TweetResult[] = [];
 
   try {
-    const titleRes = await Axios.get(
+    const result = await Axios.get(
       "https://api.twitter.com/1.1/search/tweets.json",
       {
         headers: {
@@ -166,7 +166,9 @@ export async function getTweetFeed(event, context, callback) {
       }
     );
 
-    const titleTweetResponse = titleRes.data as TweetSearchResult;
+    console.log(result);
+
+    const titleTweetResponse = result.data as TweetSearchResult;
 
     tweets = titleTweetResponse.results;
   } catch (err) {
