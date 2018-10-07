@@ -5,85 +5,111 @@ interface TokenResponse {
   access_token: string;
 }
 
+interface UserMention {
+  screen_name: string;
+  name: string;
+  id: number;
+  id_str: string;
+  indices: number[];
+}
+
+interface Url {
+  url: string;
+  expanded_url: string;
+  display_url: string;
+  indices: number[];
+}
+
+interface Entities {
+  hashtags: any[];
+  symbols: any[];
+  user_mentions: UserMention[];
+  urls: Url[];
+}
+
+interface Metadata {
+  iso_language_code: string;
+  result_type: string;
+}
+
+interface Description {
+  urls: any[];
+}
+
+interface Entities2 {
+  description: Description;
+}
+
 interface User {
-  id: any;
+  id: number;
   id_str: string;
   name: string;
   screen_name: string;
   location: string;
-  url: string;
   description: string;
-  translator_type: string;
+  url?: any;
+  entities: Entities2;
   protected: boolean;
-  verified: boolean;
   followers_count: number;
   friends_count: number;
   listed_count: number;
-  favourites_count: number;
-  statuses_count: number;
   created_at: string;
+  favourites_count: number;
   utc_offset?: any;
   time_zone?: any;
   geo_enabled: boolean;
+  verified: boolean;
+  statuses_count: number;
   lang: string;
   contributors_enabled: boolean;
   is_translator: boolean;
+  is_translation_enabled: boolean;
   profile_background_color: string;
   profile_background_image_url: string;
   profile_background_image_url_https: string;
   profile_background_tile: boolean;
+  profile_image_url: string;
+  profile_image_url_https: string;
+  profile_banner_url: string;
   profile_link_color: string;
   profile_sidebar_border_color: string;
   profile_sidebar_fill_color: string;
   profile_text_color: string;
   profile_use_background_image: boolean;
-  profile_image_url: string;
-  profile_image_url_https: string;
-  profile_banner_url: string;
+  has_extended_profile: boolean;
   default_profile: boolean;
   default_profile_image: boolean;
   following?: any;
   follow_request_sent?: any;
   notifications?: any;
+  translator_type: string;
 }
 
 interface TweetResult {
   created_at: string;
-  id: any;
+  id: number;
   id_str: string;
   text: string;
-  display_text_range: number[];
-  source: string;
   truncated: boolean;
-  in_reply_to_status_id: any;
+  entities: Entities;
+  metadata: Metadata;
+  source: string;
+  in_reply_to_status_id: number;
   in_reply_to_status_id_str: string;
-  in_reply_to_user_id?: number;
+  in_reply_to_user_id: number;
   in_reply_to_user_id_str: string;
   in_reply_to_screen_name: string;
   user: User;
   geo?: any;
   coordinates?: any;
-  place: any;
+  place?: any;
   contributors?: any;
   is_quote_status: boolean;
-  quote_count: number;
-  reply_count: number;
   retweet_count: number;
   favorite_count: number;
-  entities: any;
   favorited: boolean;
   retweeted: boolean;
-  filter_level: string;
   lang: string;
-  matching_rules: any[];
-  extended_tweet: any;
-  retweeted_status: any;
-  possibly_sensitive?: boolean;
-  quoted_status_id?: number;
-  quoted_status_id_str: string;
-  quoted_status: any;
-  quoted_status_permalink: any;
-  extended_entities: any;
 }
 
 interface SearchMetadata {
@@ -171,8 +197,6 @@ export async function getTweetFeed(event, context, callback) {
         }
       }
     );
-
-    console.log(result);
 
     const titleTweetResponse = result.data as TweetSearchResult;
 
