@@ -5,6 +5,12 @@ interface TokenResponse {
   access_token: string;
 }
 
+interface AvailableQueryParams {
+  t: string; // title
+  a?: string; // author name
+  j?: string; // journal name
+}
+
 interface UserMention {
   screen_name: string;
   name: string;
@@ -129,7 +135,7 @@ interface TweetSearchResult {
   search_metadata: SearchMetadata;
 }
 
-function logError(err, errorName: string) {
+function logError(err, errorName: string, callback: Function) {
   console.log(
     `==================== HAD ERROR TO ${errorName} ====================`
   );
@@ -138,9 +144,21 @@ function logError(err, errorName: string) {
   console.log(
     `==================== HAD ERROR TO ${errorName} ====================`
   );
+
+  const response = {
+    statusCode: 400,
+    headers: {
+      "Access-Control-Allow-Origin": "*"
+    },
+    body: JSON.stringify({
+      error: err.response.data || err.message
+    })
+  };
+
+  return callback(null, response);
 }
 
-async function getTwitterToken() {
+async function getTwitterToken(callback: Function) {
   const TWITTER_SERVICE_KEY = process.env.TWITTER_SERVICE_KEY;
   const TWITTER_SECRET_KEY = process.env.TWITTER_SECRET_KEY;
   const rawBearerToken = `${TWITTER_SERVICE_KEY}:${TWITTER_SECRET_KEY}`;
@@ -162,13 +180,40 @@ async function getTwitterToken() {
 
     return tokenInfo.access_token;
   } catch (err) {
-    logError(err, "GET_BEARER_TOKEN");
+    return logError(err, "GET_BEARER_TOKEN", callback);
+  }
+}
+
+async function searchTweets(
+  token: string,
+  searchQuery: string,
+  callback: Function
+) {
+  try {
+    const result = await Axios.get(
+      "https://api.twitter.com/1.1/search/tweets.json",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        params: {
+          q: searchQuery
+        }
+      }
+    );
+
+    const titleTweetResponse = result.data as TweetSearchResult;
+
+    return titleTweetResponse.statuses;
+  } catch (err) {
+    return logError(err, "GET_TWEETS_FROM_TITLE_SEARCH", callback);
   }
 }
 
 export async function getTweetFeed(event, context, callback) {
   const queryParams = event.queryStringParameters;
-  if (!queryParams || !queryParams.q) {
+
+  if (!queryParams || !queryParams.t) {
     const response = {
       statusCode: 400,
       headers: {
@@ -182,8 +227,31 @@ export async function getTweetFeed(event, context, callback) {
     return callback(null, response);
   }
 
-  const token = await getTwitterToken();
+  const title = queryParams.t;
+  const authorName = queryParams.a;
+  const journalName = queryParams.j;
+  const token: string = await getTwitterToken(callback);
+
   let tweets: TweetResult[] = [];
+  tweets = await searchTweets(token, title, callback);
+
+  if (tweets.length < 10) {
+    const authorNameResult = await searchTweets(
+      token,
+      `"${authorName}"`,
+      callback
+    );
+    tweets = [...tweets, ...authorNameResult];
+  }
+
+  if (tweets.length < 10) {
+    const journalNameResult = await searchTweets(
+      token,
+      `"${journalName}"`,
+      callback
+    );
+    tweets = [...tweets, ...journalNameResult];
+  }
 
   try {
     const result = await Axios.get(
@@ -202,7 +270,7 @@ export async function getTweetFeed(event, context, callback) {
 
     tweets = titleTweetResponse.statuses;
   } catch (err) {
-    logError(err, "GET_TWEETS_FROM_TITLE_SEARCH");
+    return logError(err, "GET_TWEETS_FROM_TITLE_SEARCH", callback);
   }
 
   const response = {
