@@ -46,6 +46,14 @@ interface Entities2 {
   description: Description;
 }
 
+interface Result {
+  data: {
+    title: TweetResult[];
+    firstAuthor: TweetResult[];
+    journal: TweetResult[];
+  };
+}
+
 interface User {
   id: number;
   id_str: string;
@@ -189,7 +197,6 @@ async function searchTweets(
   searchQuery: string,
   callback: Function
 ) {
-  console.log(searchQuery);
   try {
     const result = await Axios.get(
       "https://api.twitter.com/1.1/search/tweets.json",
@@ -233,25 +240,32 @@ export async function getTweetFeed(event, context, callback) {
   const journalName = queryParams.j;
   const token: string = await getTwitterToken(callback);
 
-  let tweets: TweetResult[] = [];
-  tweets = await searchTweets(token, title, callback);
+  const result: Result = {
+    data: {
+      title: [],
+      firstAuthor: [],
+      journal: []
+    }
+  };
 
-  if (tweets.length < 10) {
+  result.data.title = await searchTweets(token, title, callback);
+
+  if (result.data.title.length < 10) {
     const authorNameResult = await searchTweets(
       token,
       `"${authorName}"`,
       callback
     );
-    tweets = [...tweets, ...authorNameResult];
+    result.data.firstAuthor = authorNameResult;
   }
 
-  if (tweets.length < 10) {
+  if (result.data.title.length + result.data.firstAuthor.length < 10) {
     const journalNameResult = await searchTweets(
       token,
       `"${journalName}"`,
       callback
     );
-    tweets = [...tweets, ...journalNameResult];
+    result.data.journal = journalNameResult;
   }
 
   const response = {
@@ -260,7 +274,7 @@ export async function getTweetFeed(event, context, callback) {
       "Access-Control-Allow-Origin": "*"
     },
     body: JSON.stringify({
-      data: tweets
+      data: result
     })
   };
 
