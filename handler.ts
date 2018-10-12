@@ -219,7 +219,7 @@ async function searchTweets(
 }
 
 export async function getTweetFeed(event, context, callback) {
-  const queryParams = event.queryStringParameters;
+  const queryParams: AvailableQueryParams = event.queryStringParameters;
 
   if (!queryParams || !queryParams.t) {
     const response = {
@@ -248,12 +248,16 @@ export async function getTweetFeed(event, context, callback) {
     }
   };
 
-  result.data.title = await searchTweets(token, title, callback);
+  result.data.title = await searchTweets(
+    token,
+    `"${title}" "${journalName}"`,
+    callback
+  );
 
   if (result.data.title.length < 10) {
     const authorNameResult = await searchTweets(
       token,
-      `"${authorName}"`,
+      `"${authorName}" "${title}"`,
       callback
     );
     result.data.firstAuthor = authorNameResult;
@@ -262,7 +266,7 @@ export async function getTweetFeed(event, context, callback) {
   if (result.data.title.length + result.data.firstAuthor.length < 10) {
     const journalNameResult = await searchTweets(
       token,
-      `"${journalName}"`,
+      `"${journalName}" "${authorName}"`,
       callback
     );
     result.data.journal = journalNameResult;
